@@ -63,9 +63,12 @@ export class Global {
     ctx: Context,
     game: Game,
     player: Player,
-    newGame?: boolean
+    newGame?: boolean,
   ) => {
-    game.addPlayer(player.id);
+    if (player.gameId === game.id) {
+      throw new Error("You are already in this game.");
+    }
+    await game.addPlayer(player.id, ctx);
     await player.joinGame(ctx, game.id, newGame);
   };
 
@@ -84,5 +87,11 @@ export class Global {
 
   getArchivedPoems = () => {
     return this.archivedPoems;
+  };
+
+  clearMemory = () => {
+    this.activePlayers = [];
+    this.games = {};
+    this.archivedPoems = {};
   };
 }

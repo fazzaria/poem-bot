@@ -1,4 +1,10 @@
-import { getGame, getGameOrThrow, joinGame } from "data";
+import { GAME_NOT_FOUND_WITH_ID } from "const";
+import {
+  getContextPlayerOrThrow,
+  getGame,
+  getGameOrThrow,
+  joinGame,
+} from "data";
 import { messagePlayer } from "messaging";
 import { setPlayerState } from "player-state";
 import {
@@ -9,11 +15,8 @@ import {
 } from "types";
 import { getConversationValue } from "utils";
 
-export const gameIdConversation: ConversationFn = async (
-  conversation,
-  ctx,
-  player
-) => {
+export const gameIdConversation: ConversationFn = async (conversation, ctx) => {
+  const player = getContextPlayerOrThrow(ctx);
   await getConversationValue(conversation, {
     exitCallback: BasicCallback.RETURN_TO_PREVIOUS_STATE,
 
@@ -29,12 +32,17 @@ export const gameIdConversation: ConversationFn = async (
       await joinGame(ctx, game, player);
       return;
     },
-    validate: (gameId: string) => {
+    validate: async (gameId: string) => {
       const game = getGame(gameId);
       if (game) {
         return true;
       }
-      player.setNotification(`Game with id ${gameId} not found.`);
+      await messagePlayer(
+        player.id,
+        player.state,
+        ctx,
+        GAME_NOT_FOUND_WITH_ID(gameId)
+      );
       return false;
     },
   });

@@ -1,4 +1,5 @@
 import { Global } from "classes";
+import { PLAYER_NOT_FOUND } from "const";
 import { Context } from "types";
 import { getUserInfo } from "utils";
 
@@ -47,7 +48,7 @@ export const getGameOrThrow = (gameId: string = "") => {
 export const getPlayerOrThrow = (id: number) => {
   const player = getPlayer(id);
   if (player) return player;
-  throw new Error("Player not found.");
+  throw new Error(PLAYER_NOT_FOUND);
 };
 
 export const getContextPlayer = (ctx: Context) => {
@@ -69,5 +70,5 @@ export const getContextPlayerOrCreate = (ctx: Context) => {
 export const getContextPlayerOrThrow = (ctx: Context) => {
   const player = getContextPlayer(ctx);
   if (player) return player;
-  throw new Error("Player not found.");
+  throw new Error(PLAYER_NOT_FOUND);
 };

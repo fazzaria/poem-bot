@@ -1,22 +1,28 @@
-import { getPlayers } from "data";
-import { messagePlayer } from "messaging";
+import { HAS_JOINED, HAS_LEFT, HOST_LEFT, HOST_RESTARTED } from "const";
+import { getPlayerOrThrow, getPlayers, leaveGame } from "data";
 import { setPlayerState } from "player-state";
 import {
   Context,
   GameOptions,
   GameOverrides,
   GameProps,
-  MessagingState,
   PlayerState,
 } from "types";
 import { generateGameId } from "./generate-game-id";
 import { Player } from "../player";
 import { Poem } from "../poem";
+import * as helperFns from "./helpers";
+import { forPlayers, randomStarDecorator } from "utils";
+import { messagePlayer } from "messaging";
 
 export const gameDefaults: Partial<GameProps> = {
   inProgress: false,
 };
 
+type Helpers = typeof helperFns;
+export interface Game extends Helpers {}
+
+// TODO decompose this into smaller bits
 export class Game {
   currentWriterId?: number;
   destroy: () => void;
@@ -49,133 +55,174 @@ export class Game {
     this.options = { ...(options || {}) };
     this.playerIds = playerIds ?? [];
     this.poem = new Poem({ gameId: this.id, ...(poemProps ?? {}) });
+    Object.values(helperFns).forEach(
+      // @ts-ignore
+      (fn) => (this[fn.name as keyof Helpers] = fn),
+    );
   }
 
-  addLine = async (ctx: Context, line: string, author: string) => {
-    this.poem.addLine(line, author);
-    await this.advanceTurnOrder(ctx);
-  };
-
-  addPlayer = (playerId: number) => {
-    if (!this.playerIds.length) this.hostId = playerId;
-    this.playerIds.push(playerId);
-  };
-
-  advanceTurnOrder = async (ctx: Context) => {
-    const eligiblePlayers = this.getEligiblePlayers();
-    const gameDone = eligiblePlayers.length === 0;
+  advanceTurnOrder = async (ctx: Context, previousPlayerId?: number) => {
+    const nextPlayer = this.getActivePlayer();
+    const gameDone = !nextPlayer;
     if (gameDone) {
       await this.finish(ctx);
+      return;
+    }
+    if (previousPlayerId && this.hasPlayer(previousPlayerId)) {
+      await setPlayerState(
+        previousPlayerId,
+        ctx,
+        PlayerState.WAITING_AFTER_WRITING,
+      );
+    }
+
+    const { id: nextPlayerId } = nextPlayer;
+    // messages to the previous and next player are already handled by state changes
+    await forPlayers(this.getPlayers(), async (player) => {
+      if (player.id === nextPlayerId) {
+        await setPlayerState(nextPlayerId, ctx, PlayerState.WRITING);
+      } else if (![previousPlayerId].includes(player.id)) {
+        player.refreshMessage(ctx);
+      }
+    });
+  };
+
+  removePlayer = async (player: Player, ctx: Context) => {
+    if (player.id === this.hostId) {
+      await this.removeHost(ctx);
+      return;
+    }
+    if (!this.getHost()) {
+      return;
+    }
+    this.removePlayerId(player.id);
+
+    await this.messageAllOtherPlayers({
+      ctx,
+      customMessage: HAS_LEFT(player.userName),
+      fromPlayerId: player.id,
+      players: this.getPlayers(),
+      state: null,
+    });
+    if (this.poem.completed) return;
+    const playerWasActive =
+      this.inProgress &&
+      !this.getPlayers().find((p) => p.state === PlayerState.WRITING);
+    if (playerWasActive) {
+      await this.advanceTurnOrder(ctx, player.id);
     } else {
-      const activePlayer = this.getActivePlayer();
-      await activePlayer.takeTurn(ctx);
+      await this.refreshPlayerMessages({ ctx, players: this.getPlayers() });
     }
   };
 
-  getActivePlayer = () => {
-    return this.getEligiblePlayers()[0];
+  removeHost = async (ctx: Context) => {
+    await this.messageAllOtherPlayers({
+      ctx,
+      customMessage: HOST_LEFT,
+      fromPlayerId: this.hostId!,
+      players: this.getPlayers(),
+      state: PlayerState.START,
+    });
+    this.removePlayerId(this.hostId);
+
+    const nonHostPlayers = this.getPlayers().filter(
+      (player) => player.id !== this.hostId,
+    );
+    await forPlayers(
+      nonHostPlayers,
+      async (player) => await leaveGame(ctx, this, player),
+    );
+    this.destroy();
+  };
+
+  startGame = async (ctx: Context) => {
+    await this.messageAllOtherPlayers({
+      ctx,
+      customMessage: "The host has started the game.",
+      fromPlayerId: this.hostId!,
+      players: this.getPlayers(),
+      state: null,
+    });
+    this.inProgress = true;
+    this.shufflePlayers();
+    const firstPlayer = this.getPlayers()[0];
+    await setPlayerState(firstPlayer.id, ctx, PlayerState.WRITING);
+    await this.transitionAllOtherPlayers({
+      ctx,
+      fromPlayerId: firstPlayer.id,
+      players: this.getPlayers(),
+      state: PlayerState.WAITING_TO_WRITE,
+    });
+  };
+
+  addPlayer = async (playerId: number, ctx: Context) => {
+    const player = getPlayerOrThrow(playerId);
+    this.playerIds.push(playerId);
+    if (this.playerIds.length === 1) {
+      this.hostId = playerId;
+    } else {
+      await this.messageAllOtherPlayers({
+        ctx,
+        customMessage: HAS_JOINED(player.userName),
+        fromPlayerId: playerId,
+        players: this.getPlayers(),
+        state: null,
+      });
+      await this.refreshOtherPlayerMessages({
+        ctx,
+        players: this.getPlayers(),
+        fromPlayerId: playerId,
+      });
+    }
+  };
+
+  finish = async (ctx: Context) => {
+    this.poem.complete();
+    await this.transitionPlayers({
+      ctx,
+      players: this.getPlayers(),
+      state: PlayerState.POST_GAME,
+    });
+
+    await forPlayers(this.getPlayers(), (player) =>
+      this.poem.sendToPlayer(player.id, ctx),
+    );
+  };
+
+  prunePlayerIds = () => {
+    const players = this.getPlayers();
+    for (const player of players) {
+      if (player.gameId !== this.id) {
+        this.removePlayerId(player.id);
+      }
+    }
+  };
+
+  getActivePlayer = (): Player | undefined => {
+    const eligiblePlayers = this.getEligiblePlayers();
+    return eligiblePlayers[0];
   };
 
   getEligiblePlayers = () => {
     return this.getPlayers().filter((player) => player.canWrite());
   };
 
+  getHost = (): Player | undefined => {
+    return this.getPlayers().find((player) => player.isHost());
+  };
+
   getPlayers = () => {
     return getPlayers(this.playerIds);
   };
 
-  hasPlayer = (playerId: number) => {
-    return this.playerIds.includes(playerId);
+  hasPlayer = (playerId?: number) => {
+    return playerId && this.playerIds.includes(playerId);
   };
 
-  finish = async (ctx: Context) => {
-    this.poem.complete();
-    await this.transitionPlayers(PlayerState.POST_GAME, ctx);
-  };
-
-  // todo: use Promise.all instead
-  private forPlayers = async (
-    players: Player[],
-    callback: (player: Player) => Promise<void>
-  ) => {
-    for (const player of players) {
-      try {
-        await callback(player);
-      } catch (err) {
-        console.error(`Error on iterate players helper`, err);
-      }
-    }
-  };
-
-  private forAllPlayers = async (
-    callback: (player: Player) => Promise<void>
-  ) => {
-    const players = this.getPlayers();
-    await this.forPlayers(players, callback);
-  };
-
-  private forAllOtherPlayers = async (
-    fromPlayerId: number,
-    callback: (player: Player) => Promise<void>
-  ) => {
-    const players = this.getPlayers();
-    const otherPlayers = players.filter((player) => player.id !== fromPlayerId);
-    await this.forPlayers(otherPlayers, callback);
-  };
-
-  messagePlayers = async (state: MessagingState, ctx: Context) => {
-    await this.forAllPlayers((player) => messagePlayer(player.id, state, ctx));
-  };
-
-  messageAllOtherPlayers = async (
-    fromPlayerId: number,
-    state: MessagingState,
-    ctx: Context
-  ) => {
-    await this.forAllOtherPlayers(fromPlayerId, (player) =>
-      messagePlayer(player.id, state, ctx)
-    );
-  };
-
-  notifyPlayers = async (notification: string, ctx: Context) => {
-    await this.forAllPlayers((player) => player.notify(notification, ctx));
-  };
-
-  notifyAllOtherPlayers = async (
-    fromPlayerId: number,
-    notification: string,
-    ctx: Context
-  ) => {
-    await this.forAllOtherPlayers(fromPlayerId, (player) =>
-      player.notify(notification, ctx)
-    );
-  };
-
-  transitionPlayers = async (state: PlayerState, ctx: Context) => {
-    await this.forAllPlayers((player) => setPlayerState(player.id, ctx, state));
-  };
-
-  refreshPlayerMessages = async (ctx: Context) => {
-    await this.forAllPlayers((player) => player.refreshMessage(ctx));
-  };
-
-  removePlayer = async (player: Player, ctx: Context) => {
-    if (this.playerIds.length === 1) {
-      this.destroy();
-      return;
-    }
-    const playerIndex = this.playerIds.findIndex((id) => id === player.id);
-    if (playerIndex > -1) {
-      this.playerIds.splice(playerIndex, 1);
-    }
-    if (this.inProgress) {
-      await this.advanceTurnOrder(ctx);
-    }
-  };
-
-  restart = async (ctx: Context) => {
-    await this.transitionPlayers(PlayerState.LOBBY, ctx);
-    await this.notifyPlayers("The host has restarted the game.", ctx);
+  removePlayerId = (idToRemove?: number) => {
+    if (!idToRemove) return;
+    const idIndex = this.playerIds.findIndex((id) => id === idToRemove);
+    this.playerIds.splice(idIndex, 1);
   };
 
   setOptions = (newOptions: GameOptions) => {
@@ -186,10 +233,31 @@ export class Game {
     this.playerIds.sort(() => Math.random() - 0.5);
   };
 
-  startGame = async (ctx: Context) => {
-    this.inProgress = true;
-    await this.transitionPlayers(PlayerState.WAITING_TO_WRITE, ctx);
-    this.shufflePlayers();
-    await this.advanceTurnOrder(ctx);
+  addLine = async (ctx: Context, line: string, author: Player) => {
+    this.poem.addLine(line, author.userName);
+    await messagePlayer(
+      author.id,
+      author.state,
+      ctx,
+      `Your line has been added! ${randomStarDecorator()}`,
+    );
+    await this.advanceTurnOrder(ctx, author.id);
+  };
+
+  restart = async (ctx: Context) => {
+    this.poem = new Poem({ gameId: this.id });
+    this.inProgress = false;
+    await this.messageAllOtherPlayers({
+      ctx,
+      customMessage: HOST_RESTARTED,
+      fromPlayerId: this.hostId!,
+      players: this.getPlayers(),
+      state: null,
+    });
+    await this.transitionPlayers({
+      players: this.getPlayers(),
+      state: PlayerState.LOBBY,
+      ctx,
+    });
   };
 }

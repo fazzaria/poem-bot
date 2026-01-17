@@ -2,15 +2,15 @@ import {
   Conversation as GrammyConversation,
   ConversationFlavor,
 } from "@grammyjs/conversations";
-import { Player } from "classes";
 import { Context } from "./server";
 
 export enum BasicCallback {
   BEGIN_GAME = "Start Game",
   CREATE_GAME = "Create Game",
+  EXIT_ARCHIVE = "Exit Archive",
   LEAVE_GAME = "Leave",
   RESTART_APP = "Restart",
-  RESTART_GAME = "Play Again?",
+  RESTART_GAME = "Play Again",
   RETURN_TO_PREVIOUS_STATE = "Cancel",
   SET_UP_GAME = "New Game",
   TRY_JOIN = "Join Game",
@@ -33,6 +33,7 @@ export type Callback = BasicCallback | GameConfigCallback;
 
 export enum Command {
   INSPO = "inspo",
+  RESTART = "restart",
   START = "start",
 }
 
@@ -40,7 +41,6 @@ export enum ConversationState {
   GET_ARCHIVED_POEM = "GET_ARCHIVED_POEM",
   GET_GAME_DESCRIPTION = "GET_GAME_DESCRIPTION",
   GET_GAME_ID = "GET_GAME_ID",
-  GET_NEXT_LINE = "GET_NEXT_LINE",
 }
 
 export type Conversation = GrammyConversation<
@@ -50,6 +50,7 @@ export type Conversation = GrammyConversation<
 
 export type ConversationFn = (
   conversation: Conversation,
-  ctx: ConversationFlavor<Context>,
-  player: Player
+  ctx: ConversationFlavor<Context>
 ) => Promise<any>;
+
+export type ReplyHandlerFn = (ctx: Context, reply: string) => Promise<void>;

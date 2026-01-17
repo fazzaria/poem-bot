@@ -3,6 +3,7 @@ import { Player } from "classes";
 import { Context } from "./server";
 
 export enum PlayerState {
+  IN_ARCHIVES = "ARCHIVES",
   LOBBY = "LOBBY",
   POST_GAME = "POST_GAME",
   SETTING_UP_GAME = "SETTING_UP_GAME",
@@ -13,9 +14,10 @@ export enum PlayerState {
   VIEWING_ARCHIVED_POEM = "VIEWING_ARCHIVED_POEM",
   WAITING_AFTER_WRITING = "WAITING_AFTER_WRITING",
   WAITING_TO_WRITE = "WAITING_TO_WRITE",
+  WRITING = "WRITING",
 }
 
-export type StateManagementFn = (player: Player, ctx: Context) => Promise<void>;
+export type StateManagementFn = (player: Player) => Promise<void>;
 
 export type StateConfig = {
   enter: StateManagementFn;

@@ -20,9 +20,8 @@ export const setPlayerState = async (
   const oldConfig = stateRegistry[oldState];
   const newConfig = stateRegistry[newState];
 
-  if (oldConfig.exit) await oldConfig.exit(player, ctx);
+  if (oldConfig.exit) await oldConfig.exit(player);
 
-  player.clearNotification();
   await messagePlayer(player.id, newState, ctx);
-  await newConfig.enter(player, ctx);
+  await newConfig.enter(player);
 };

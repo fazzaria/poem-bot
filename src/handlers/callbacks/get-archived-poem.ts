@@ -1,8 +1,8 @@
 import { getContextPlayerOrCreate } from "data";
-import { ConversationState, HandlerFn } from "types";
-import { enterConversation } from "utils";
+import { setPlayerState } from "player-state";
+import { HandlerFn, PlayerState } from "types";
 
 export const getArchivedPoemHandler: HandlerFn = async (ctx) => {
   const player = getContextPlayerOrCreate(ctx);
-  await enterConversation(ConversationState.GET_ARCHIVED_POEM, player, ctx);
+  await setPlayerState(player.id, ctx, PlayerState.IN_ARCHIVES);
 };

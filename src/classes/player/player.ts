@@ -1,14 +1,7 @@
 import { getGame, getGameOrThrow } from "data";
 import { messagePlayer } from "messaging";
 import { setPlayerState } from "player-state";
-import {
-  Context,
-  ConversationState,
-  PlayerOverrides,
-  PlayerProps,
-  PlayerState,
-} from "types";
-import { enterConversation } from "utils";
+import { Context, PlayerOverrides, PlayerProps, PlayerState } from "types";
 
 export const playerDefaults: Partial<PlayerProps> = {
   gameId: "",
@@ -20,23 +13,12 @@ export class Player {
   destroy: (id: number) => void;
   gameId?: string;
   id: number;
-  simulated?: boolean;
-  notification?: string;
   previousState: PlayerState = PlayerState.START;
   state: PlayerState;
   userName: string;
 
   constructor(overrides: PlayerOverrides) {
-    const {
-      activeMessageId,
-      destroy,
-      gameId,
-      id,
-      notification,
-      simulated,
-      state,
-      userName,
-    } = {
+    const { activeMessageId, destroy, gameId, id, state, userName } = {
       ...playerDefaults,
       ...overrides,
     };
@@ -44,22 +26,12 @@ export class Player {
     this.activeMessageId = activeMessageId;
     this.id = id;
     this.userName = userName;
-    this.simulated = simulated;
     this.state = state ?? PlayerState.START;
     this.gameId = gameId;
-    this.notification = notification;
   }
 
   canWrite = () => {
-    return ![
-      PlayerState.SPECTATING,
-      PlayerState.TYPING,
-      PlayerState.WAITING_AFTER_WRITING,
-    ].includes(this.state);
-  };
-
-  clearNotification = () => {
-    this.notification = "";
+    return [PlayerState.WAITING_TO_WRITE].includes(this.state);
   };
 
   /* destroy=()=>{
@@ -96,11 +68,6 @@ export class Player {
     await setPlayerState(this.id, ctx, PlayerState.START);
   };
 
-  notify = async (notification: string, ctx: Context) => {
-    this.setNotification(notification);
-    await this.refreshMessage(ctx);
-  };
-
   refreshMessage = async (ctx: Context) => {
     await messagePlayer(this.id, this.state, ctx);
   };
@@ -113,15 +80,7 @@ export class Player {
     this.gameId = id;
   };
 
-  setNotification = (notification: string) => {
-    this.notification = notification;
-  };
-
   setPreviousState = (state: PlayerState) => {
     this.previousState = state;
-  };
-
-  takeTurn = async (ctx: Context) => {
-    await enterConversation(ConversationState.GET_NEXT_LINE, this, ctx);
   };
 }

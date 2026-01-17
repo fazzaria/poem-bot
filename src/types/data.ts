@@ -36,9 +36,7 @@ export type PlayerProps = {
   destroy: (id: number) => void;
   gameId?: string;
   id: number;
-  notification?: string;
   userName: string;
-  simulated?: boolean;
   state: PlayerState;
 };
 

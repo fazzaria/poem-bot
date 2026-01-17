@@ -1,9 +1,9 @@
 const hiddenSpace = "\u2063"; // invisible character applied before callback names
 
-export const addHiddenCharacter = (str: string) => {
+export const encodeCallbackName = (str: string) => {
   return `${hiddenSpace}${str}`;
 };
 
-export const removeHiddenCharacter = (str: string) => {
+export const decodeCallbackName = (str: string) => {
   return str.replace(hiddenSpace, "");
 };

@@ -2,7 +2,7 @@ import { Player } from "classes";
 import { getGameOrThrow } from "data";
 import {
   BasicCallback,
-  CallbackButton,
+  Callback,
   ConversationState,
   GameConfigCallback,
   GameOption,
@@ -11,10 +11,11 @@ import {
 } from "types";
 
 export const stateKeyboardButtonMap: {
-  [key in MessagingState]:
-    | ((player: Player) => (string | CallbackButton)[])
-    | null;
+  [key in MessagingState]: ((player: Player) => Callback[]) | null;
 } = {
+  [PlayerState.IN_ARCHIVES]: (player) => {
+    return [BasicCallback.EXIT_ARCHIVE];
+  },
   [PlayerState.LOBBY]: (player) => {
     const isHost = player.isHost();
     if (isHost) {
@@ -27,6 +28,7 @@ export const stateKeyboardButtonMap: {
     if (isHost) return [BasicCallback.RESTART_GAME];
     return [];
   },
+  [PlayerState.WRITING]: (player) => [],
   [PlayerState.SETTING_UP_GAME]: (player) => {
     const game = getGameOrThrow(player.gameId);
     const hasDescription = !!game?.options[GameOption.DESCRIPTION];
@@ -56,7 +58,7 @@ export const stateKeyboardButtonMap: {
     return [];
   },
   [PlayerState.VIEWING_ARCHIVED_POEM]: (player) => {
-    return [];
+    return [BasicCallback.EXIT_ARCHIVE];
   },
   [PlayerState.WAITING_AFTER_WRITING]: (player) => [],
   [PlayerState.WAITING_TO_WRITE]: (player) => [],
@@ -69,5 +71,4 @@ export const stateKeyboardButtonMap: {
   [ConversationState.GET_GAME_ID]: (player) => [
     BasicCallback.RETURN_TO_PREVIOUS_STATE,
   ],
-  [ConversationState.GET_NEXT_LINE]: (player) => [],
 };

@@ -1,6 +1,7 @@
 export { beginGameHandler } from "./begin-game";
 export { createGameHandler } from "./create-game";
 export { deleteGameDescriptionHandler } from "./delete-description";
+export { exitArchiveHandler } from "./exit-archive";
 export { getArchivedPoemHandler } from "./get-archived-poem";
 export { leaveGameHandler } from "./leave-game";
 export { restartAppHandler } from "./restart-app";

@@ -1,6 +1,7 @@
 // https://core.telegram.org/bots/api#formatting-options
 import { ParseMode } from "grammy/types";
 
+// TODO figure out how to use telegram's markdown because it doesn't seem to work
 export const sanitizeMarkdownV2 = (markdown: string) => {
   const regex = new RegExp(/[_*[\]()~`>#+-=|{}.!]/g);
   const sanitizedMarkdown = markdown;
@@ -17,7 +18,7 @@ export const sanitizeHtml = (html: string) => {
 
 export const sanitizeText = (
   str: string,
-  parseMode: ParseMode = "MarkdownV2"
+  parseMode: ParseMode = "MarkdownV2",
 ): string => {
   switch (parseMode) {
     case "Markdown":
@@ -29,13 +30,11 @@ export const sanitizeText = (
   }
 };
 
-export const messageWithNotification = (
+export const getSanitizedMessage = (
   msg: string,
-  notification: string = "",
-  parseMode: ParseMode = "MarkdownV2"
+  parseMode: ParseMode = "MarkdownV2",
 ) => {
   const sanitizedMessage = sanitizeText(msg, parseMode);
-  const sanitizedNotification = sanitizeText(notification, parseMode);
-  const newMessage = `${sanitizedNotification}\n\n${sanitizedMessage.trim()}`;
+  const newMessage = `${sanitizedMessage.trim()}`;
   return newMessage;
 };

@@ -4,4 +4,4 @@ const enter: StateManagementFn = async (player) => {};
 
 const exit: StateManagementFn = async (player) => {};
 
-export const typingState: StateConfig = { enter, exit };
+export const inArchivesState: StateConfig = { enter, exit };

@@ -1,5 +1,6 @@
-import { BotError, GrammyError, HttpError, InlineKeyboard } from "grammy";
-import { BasicCallback, Context } from "types";
+import { UNKNOWN_ERROR } from "const";
+import { BotError, GrammyError, HttpError } from "grammy";
+import { Context } from "types";
 
 export const errorHandlingMiddleware = (err: BotError<Context>) => {
   const ctx = err.ctx;
@@ -15,12 +16,5 @@ export const errorHandlingMiddleware = (err: BotError<Context>) => {
   } else {
     console.error(e);
   }
-  if (message) {
-    ctx.reply(message, {
-      reply_markup: new InlineKeyboard().text(
-        "Reset",
-        BasicCallback.RESTART_APP
-      ),
-    });
-  }
+  ctx.reply(`${message || UNKNOWN_ERROR}\n\nUse /start to reset.`);
 };

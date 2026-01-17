@@ -1,43 +1,47 @@
 import { Conversation } from "types";
-import { addHiddenCharacter } from "./safe-callback-name";
+import { encodeCallbackName } from "./callback-name-encoding";
 
 export const getConversationValue = async (
   conversation: Conversation,
   {
-    exitCallback: pExitcallback,
+    exitCallback: pExitcallbacks = [],
     ignoreCallbacks: pIgnoreCallbacks = [],
     handleCancel,
     handleSuccess,
+    stay,
     doEach,
     validate,
   }: {
-    exitCallback: string;
+    exitCallback: string | string[];
     ignoreCallbacks?: string[];
-    handleSuccess: (val: string) => void;
-    handleCancel?: () => void;
-    doEach?: () => void;
-    validate?: (val: string) => boolean;
-  }
+    handleSuccess: (val: string) => Promise<void>;
+    handleCancel?: () => Promise<void>;
+    stay?: boolean;
+    doEach?: () => Promise<void>;
+    validate?: (val: string) => Promise<boolean>;
+  },
 ) => {
-  const exitCallback = addHiddenCharacter(pExitcallback);
-  const ignoreCallbacks = pIgnoreCallbacks.map((callback) =>
-    addHiddenCharacter(callback)
-  );
+  const exitCallbacks =
+    typeof pExitcallbacks === "string"
+      ? [pExitcallbacks]
+      : pExitcallbacks.map(encodeCallbackName);
+  const ignoreCallbacks = pIgnoreCallbacks.map(encodeCallbackName);
+
   while (true) {
-    doEach?.();
+    await doEach?.();
 
     const result = await conversation.waitFor("message:text");
     const message = result.message.text;
 
-    if (message === exitCallback) {
-      handleCancel?.();
+    if (exitCallbacks.includes(message)) {
+      await handleCancel?.();
       return;
     }
 
     if (!ignoreCallbacks.includes(message)) {
-      if (!validate || validate?.(message)) {
-        handleSuccess(message);
-        return;
+      if (!validate || (await validate?.(message))) {
+        await handleSuccess(message);
+        if (!stay) return;
       }
     }
   }

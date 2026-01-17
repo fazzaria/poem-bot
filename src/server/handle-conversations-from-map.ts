@@ -1,6 +1,5 @@
 import { createConversation } from "@grammyjs/conversations";
 import { conversationHandlerMap } from "const";
-import { getContextPlayerOrThrow } from "data";
 import { Bot, Context } from "types";
 
 export const handleConversations = (bot: Bot) => {
@@ -9,8 +8,7 @@ export const handleConversations = (bot: Bot) => {
   )) {
     bot.use(
       createConversation(async (conversation, ctx: Context) => {
-        const player = getContextPlayerOrThrow(ctx);
-        await handler(conversation, ctx, player);
+        await handler(conversation, ctx);
       }, conversationName)
     );
   }

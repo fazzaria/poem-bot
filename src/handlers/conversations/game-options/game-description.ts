@@ -1,4 +1,4 @@
-import { getGameOrThrow } from "data";
+import { getContextPlayerOrThrow, getGameOrThrow, getGames } from "data";
 import { messagePlayer } from "messaging";
 import { setPlayerState } from "player-state";
 import {
@@ -11,9 +11,9 @@ import { getConversationValue } from "utils";
 
 export const gameDescriptionConversation: ConversationFn = async (
   conversation,
-  ctx,
-  player
+  ctx
 ) => {
+  const player = getContextPlayerOrThrow(ctx);
   const game = getGameOrThrow(player.gameId);
 
   await getConversationValue(conversation, {
@@ -32,7 +32,7 @@ export const gameDescriptionConversation: ConversationFn = async (
       await setPlayerState(player.id, ctx, PlayerState.SETTING_UP_GAME);
       return;
     },
-    validate: (description: string) => {
+    validate: async (description: string) => {
       return true;
     },
   });

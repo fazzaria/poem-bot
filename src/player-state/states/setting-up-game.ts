@@ -1,12 +1,7 @@
-import { deleteGame } from "data";
-import { PlayerState, StateConfig, StateManagementFn } from "types";
+import { StateConfig, StateManagementFn } from "types";
 
-const enter: StateManagementFn = async (player, ctx) => {};
+const enter: StateManagementFn = async (player) => {};
 
-const exit: StateManagementFn = async (player, ctx) => {
-  if (player.state !== PlayerState.LOBBY) {
-    deleteGame(player.gameId);
-  }
-};
+const exit: StateManagementFn = async (player) => {};
 
 export const settingUpGameState: StateConfig = { enter, exit };

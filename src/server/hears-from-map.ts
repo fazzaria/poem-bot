@@ -1,13 +1,13 @@
 import { HandleFromMapFn } from "types";
-import { addHiddenCharacter, removeHiddenCharacter } from "utils";
+import { decodeCallbackName, encodeCallbackName } from "utils";
 
 export const hearsFromMap: HandleFromMapFn = (bot, map) => {
   bot.hears(
-    Object.keys(map).map((callbackName) => addHiddenCharacter(callbackName)),
+    Object.keys(map).map((callbackName) => encodeCallbackName(callbackName)),
     async (ctx) => {
       const key = ctx.message?.text;
       if (!key) return;
-      await map[removeHiddenCharacter(key)]?.(ctx);
+      await map[decodeCallbackName(key)]?.(ctx);
     }
   );
 };

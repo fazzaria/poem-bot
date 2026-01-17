@@ -29,6 +29,7 @@ const gameOptionConversationFn =
 export const callbackHandlerMap: HandlerMap<Callback> = {
   [BasicCallback.BEGIN_GAME]: beginGameHandler,
   [BasicCallback.CREATE_GAME]: createGameHandler,
+  [BasicCallback.EXIT_ARCHIVE]: restartAppHandler,
   [BasicCallback.LEAVE_GAME]: leaveGameHandler,
   [BasicCallback.RESTART_APP]: restartAppHandler,
   [BasicCallback.RESTART_GAME]: restartGameHandler,
@@ -38,10 +39,10 @@ export const callbackHandlerMap: HandlerMap<Callback> = {
   [BasicCallback.TRY_LEAVE]: tryLeaveGameHandler,
   [BasicCallback.VIEW_ARCHIVED_POEMS]: getArchivedPoemHandler,
   [GameConfigCallback.ADD_DESCRIPTION]: gameOptionConversationFn(
-    GameOption.DESCRIPTION
+    GameOption.DESCRIPTION,
   ),
   [GameConfigCallback.EDIT_DESCRIPTION]: gameOptionConversationFn(
-    GameOption.DESCRIPTION
+    GameOption.DESCRIPTION,
   ),
   [GameConfigCallback.REMOVE_DESCRIPTION]: deleteGameDescriptionHandler,
 };

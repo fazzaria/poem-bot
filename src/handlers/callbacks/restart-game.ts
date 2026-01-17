@@ -6,5 +6,5 @@ export const restartGameHandler: HandlerFn = async (ctx) => {
   const isHost = player.isHost();
   if (!isHost) return;
   const game = getGameOrThrow(player.gameId);
-  await await game.restart(ctx);
+  await game.restart(ctx);
 };
