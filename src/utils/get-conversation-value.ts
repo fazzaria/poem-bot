@@ -23,7 +23,7 @@ export const getConversationValue = async (
 ) => {
   const exitCallbacks =
     typeof pExitcallbacks === "string"
-      ? [pExitcallbacks]
+      ? [encodeCallbackName(pExitcallbacks)]
       : pExitcallbacks.map(encodeCallbackName);
   const ignoreCallbacks = pIgnoreCallbacks.map(encodeCallbackName);
 

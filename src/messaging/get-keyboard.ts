@@ -18,7 +18,15 @@ export const getKeyboardForState = (player: Player, state: MessagingState) => {
     keyboard.row();
   }
 
-  if (player.isInGame() && player.state !== PlayerState.TRYING_LEAVE) {
+  if (
+    player.isInGame() &&
+    player.state !== PlayerState.TRYING_LEAVE &&
+    // TODO refactor this later - this is to account for the case where the player is configuring a game option
+    !(
+      player.state === PlayerState.TYPING &&
+      player.previousState === PlayerState.SETTING_UP_GAME
+    )
+  ) {
     keyboard.text(encodeCallbackName(BasicCallback.TRY_LEAVE));
   }
 

@@ -19,7 +19,6 @@ export const gameIdConversation: ConversationFn = async (conversation, ctx) => {
   const player = getContextPlayerOrThrow(ctx);
   await getConversationValue(conversation, {
     exitCallback: BasicCallback.RETURN_TO_PREVIOUS_STATE,
-
     doEach: async () => {
       await messagePlayer(player.id, ConversationState.GET_GAME_ID, ctx);
     },
@@ -41,7 +40,7 @@ export const gameIdConversation: ConversationFn = async (conversation, ctx) => {
         player.id,
         player.state,
         ctx,
-        GAME_NOT_FOUND_WITH_ID(gameId)
+        GAME_NOT_FOUND_WITH_ID(gameId),
       );
       return false;
     },
