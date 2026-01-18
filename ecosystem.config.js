@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "poem-bot",
-      script: "dist/index.js",
+      script: "src/server/index.ts",
       interpreter: "node",
       interpreter_args: [
         "-r",
