@@ -1,4 +1,4 @@
-import { Player, Game } from "classes";
+import { Player } from "classes";
 
 export const forPlayers = async (
   players: Player[],

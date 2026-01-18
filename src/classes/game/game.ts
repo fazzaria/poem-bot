@@ -11,16 +11,26 @@ import {
 import { generateGameId } from "./generate-game-id";
 import { Player } from "../player";
 import { Poem } from "../poem";
-import * as helperFns from "./helpers";
 import { forPlayers, randomStarDecorator } from "utils";
 import { messagePlayer } from "messaging";
+import { AllStateFn, OthersStateFn, AllFn, OthersFn } from "./types";
+
+export const forAllOtherPlayers = async ({
+  callback,
+  fromPlayerId,
+  players,
+}: {
+  fromPlayerId: number;
+  callback: (player: Player) => Promise<void>;
+  players: Player[];
+}) => {
+  const otherPlayers = players.filter((player) => player.id !== fromPlayerId);
+  await forPlayers(otherPlayers, callback);
+};
 
 export const gameDefaults: Partial<GameProps> = {
   inProgress: false,
 };
-
-type Helpers = typeof helperFns;
-export interface Game extends Helpers {}
 
 // TODO decompose this into smaller bits
 export class Game {
@@ -55,10 +65,9 @@ export class Game {
     this.options = { ...(options || {}) };
     this.playerIds = playerIds ?? [];
     this.poem = new Poem({ gameId: this.id, ...(poemProps ?? {}) });
-    Object.values(helperFns).forEach(
-      // @ts-ignore
+    /* Object.values(helperFns).forEach(
       (fn) => (this[fn.name as keyof Helpers] = fn),
-    );
+    ); */
   }
 
   advanceTurnOrder = async (ctx: Context, previousPlayerId?: number) => {
@@ -262,6 +271,81 @@ export class Game {
       players: this.getPlayers(),
       state: PlayerState.LOBBY,
       ctx,
+    });
+  };
+
+  forAllOtherPlayers = async ({
+    callback,
+    fromPlayerId,
+    players,
+  }: {
+    fromPlayerId: number;
+    callback: (player: Player) => Promise<void>;
+    players: Player[];
+  }) => {
+    const otherPlayers = players.filter((player) => player.id !== fromPlayerId);
+    await forPlayers(otherPlayers, callback);
+  };
+
+  messagePlayers: AllStateFn = async ({
+    ctx,
+    customMessage = "",
+    players,
+    state,
+  }) => {
+    await forPlayers(players, (player) =>
+      messagePlayer(player.id, state || player.state, ctx, customMessage),
+    );
+  };
+
+  messageAllOtherPlayers: OthersStateFn = async ({
+    ctx,
+    customMessage = "",
+    fromPlayerId,
+    players,
+    state = null,
+  }) => {
+    await forAllOtherPlayers({
+      players,
+      fromPlayerId,
+      callback: (player) =>
+        messagePlayer(player.id, state || player.state, ctx, customMessage),
+    });
+  };
+
+  transitionPlayers: AllStateFn = async ({ ctx, players, state }) => {
+    await forPlayers(players, (player) =>
+      setPlayerState(player.id, ctx, state ?? player.state),
+    );
+  };
+
+  transitionAllOtherPlayers: OthersStateFn = async ({
+    ctx,
+    fromPlayerId,
+    players,
+    state,
+  }) => {
+    await forAllOtherPlayers({
+      fromPlayerId,
+      players,
+      callback: (player) =>
+        setPlayerState(player.id, ctx, state ?? player.state),
+    });
+  };
+
+  refreshPlayerMessages: AllFn = async ({ ctx, players }) => {
+    await forPlayers(players, (player) => player.refreshMessage(ctx));
+  };
+
+  refreshOtherPlayerMessages: OthersFn = async ({
+    ctx,
+    players,
+    fromPlayerId,
+  }) => {
+    await forAllOtherPlayers({
+      callback: (player) => player.refreshMessage(ctx),
+      fromPlayerId,
+      players,
     });
   };
 }
