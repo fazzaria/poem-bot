@@ -146,13 +146,13 @@ export class Game {
     this.inProgress = true;
     this.shufflePlayers();
     const firstPlayer = this.getPlayers()[0];
-    await setPlayerState(firstPlayer.id, ctx, PlayerState.WRITING);
     await this.transitionAllOtherPlayers({
       ctx,
       fromPlayerId: firstPlayer.id,
       players: this.getPlayers(),
       state: PlayerState.WAITING_TO_WRITE,
     });
+    await setPlayerState(firstPlayer.id, ctx, PlayerState.WRITING);
   };
 
   addPlayer = async (playerId: number, ctx: Context) => {
@@ -187,6 +187,10 @@ export class Game {
     await forPlayers(this.getPlayers(), (player) =>
       this.poem.sendToPlayer(player.id, ctx),
     );
+  };
+
+  previousLine = () => {
+    return this.poem.previousLine();
   };
 
   prunePlayerIds = () => {

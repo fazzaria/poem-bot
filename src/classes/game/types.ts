@@ -6,11 +6,13 @@ type BasicFromArgs = { ctx: Context; fromPlayerId: number; players: Player[] };
 
 type StateArgs = BasicArgs & {
   customMessage?: string;
+  noMessage?: boolean;
   state: PlayerState | null;
 };
 type StateFromArgs = BasicArgs & {
   customMessage?: string;
   fromPlayerId: number;
+  noMessage?: boolean;
   state: PlayerState | null;
 };
 

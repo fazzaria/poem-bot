@@ -36,13 +36,17 @@ export const stateMessageMap: {
     const game = getGameOrThrow(player.gameId);
     const firstPlayer = !game.poem.lines.length;
     const lastPlayer = !game.getEligiblePlayers().length;
+    const previousLine = game.previousLine();
     // TODO use force reply or refactor conversation to make this easier
-    let message = `It's your turn! ${randomStarDecorator()}\n\nReply to this message (tap and press "Reply") with your line of poetry.\n\n`;
+    let message = `It's your turn to add to the poem! ${randomStarDecorator()}\n\nReply to this message (tap and press "Reply") to add the next line.\n\n`;
+    if (previousLine) {
+      message += `Previous line: ${previousLine}\n\n`;
+    }
     if (firstPlayer && lastPlayer) {
-      ("You're writing the only line, I guess!!");
+      message += "You're writing the only line, I guess!!\n\n";
     } else {
-      if (firstPlayer) message += `You're writing the first line!`;
-      if (lastPlayer) message += `You're writing the last line!`;
+      if (firstPlayer) message += `You're writing the first line!\n\n`;
+      if (lastPlayer) message += `You're writing the last line!\n\n`;
     }
     return message;
   },
@@ -70,7 +74,7 @@ export const stateMessageMap: {
     return message;
   },
   [PlayerState.START]: (player) =>
-    `Welcome to ${BOT_NAME}!\n\nThe game is simple: work with your friends to write a poem one line at a time. However, each person only gets to see the line written by the person before them, leading to chaos and streams-of-consciousness.\n\nNOTE: This bot is a work-in-progress, with further game modes and quality-of-life features planned for future development. For comments, questions, or to report a bug, please message ${process.env.MY_USERNAME}. Last updated: 1-18-2026\n\nHit one of the buttons below to get started.`,
+    `Welcome to ${BOT_NAME}!\n\nThe game is simple: work with your friends to write a poem one line at a time. However, each person only gets to see the line written by the person before them, leading to chaos and streams-of-consciousness.\n\nNOTE: This bot is a work-in-progress, with further game modes and quality-of-life features planned for future development. For comments, questions, or to report a bug, please message ${process.env.MY_USERNAME}. (Last updated: 1-18-2026)\n\nHit one of the buttons below to get started.`,
   [PlayerState.TRYING_LEAVE]: (player) => {
     return `Are you sure you want to leave the game?${player.isHost() ? " Since you are the host, this will end the game for all players." : ""}`;
   },

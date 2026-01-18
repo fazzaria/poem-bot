@@ -51,6 +51,12 @@ export class Poem {
     addArchivedPoem(this);
   };
 
+  previousLine = () => {
+    const lineCount = this.lines.length;
+    if (!lineCount) return "";
+    return this.lines[lineCount - 1].text;
+  };
+
   // TODO convert to markdown, but Telegram's markdown is weird
   sendToPlayer = async (playerId: number, ctx: Context) => {
     const player = getPlayerOrThrow(playerId);

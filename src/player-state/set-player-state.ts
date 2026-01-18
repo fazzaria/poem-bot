@@ -6,12 +6,13 @@ import { getPlayerOrThrow } from "data";
 export const setPlayerState = async (
   playerId: number,
   ctx: Context,
-  newState: PlayerState
+  newState: PlayerState,
+  noMessage?: boolean,
 ) => {
   const player = getPlayerOrThrow(playerId);
   const { state: oldState } = player;
   console.log(
-    `transitioning player ${player.userName} from ${oldState} to ${newState}`
+    `transitioning player ${player.userName} from ${oldState} to ${newState}`,
   );
 
   player.setPreviousState(oldState);
@@ -22,6 +23,6 @@ export const setPlayerState = async (
 
   if (oldConfig.exit) await oldConfig.exit(player);
 
-  await messagePlayer(player.id, newState, ctx);
+  if (!noMessage) await messagePlayer(player.id, newState, ctx);
   await newConfig.enter(player);
 };

@@ -8,7 +8,6 @@ export const enterConversation = async (
   conversation: ConversationState,
   ctx: Context,
 ) => {
-  console.log("entering conversation");
   const player = getContextPlayerOrThrow(ctx);
   await setPlayerState(player.id, ctx, TYPING);
   await ctx.conversation.enter(conversation);
