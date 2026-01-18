@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "tsup src/server/index.ts --watch --onSuccess \"node dist/index.js\"",
     "build": "tsup src/server/index.ts --minify --clean",
-    "start": "node dist/index.js",
-    "start:server": "npm run build && pm2 start dist/index.js",
+    "start": "pm2 start ecosystem.config.js",
     "check:circles": "npx madge --circular src/"
   },
   "author": "",
