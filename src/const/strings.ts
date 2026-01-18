@@ -1,7 +1,7 @@
 import { Game, Player } from "classes";
 import { GameOption } from "types";
 
-export const MY_USERNAME = `@${process.env.MY_USERNAME}`;
+export const MY_USERNAME = `${process.env.MY_USERNAME}`;
 export const PLS_REPORT = `Please let ${MY_USERNAME} know.`;
 export const BOT_NAME = "JOLB";
 export const BOT_RUNNING = `${BOT_NAME} is now running.`;
