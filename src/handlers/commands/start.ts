@@ -11,7 +11,7 @@ import {
 import { setPlayerState } from "player-state";
 import { HandlerFn, PlayerState } from "types";
 
-const testingGame = true;
+const testingGame = false;
 const testingArchive = false;
 
 export const startHandler: HandlerFn = async (ctx) => {
