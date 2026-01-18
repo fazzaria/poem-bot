@@ -70,7 +70,7 @@ export const stateMessageMap: {
     return message;
   },
   [PlayerState.START]: (player) =>
-    `Welcome to ${BOT_NAME}!\n\nThe game is simple: work with your friends to write a poem one line at a time. However, each person only gets to see the line written by the person before them, leading to chaos and streams-of-consciousness.\n\nHit one of the buttons below to get started.\n\nNOTE: This bot is a work-in-progress, with further game modes and quality-of-life features planned for future development. For comments, questions, or to report a bug, please message ${process.env.MY_USERNAME}. Last updated: 1-18-2026`,
+    `Welcome to ${BOT_NAME}!\n\nThe game is simple: work with your friends to write a poem one line at a time. However, each person only gets to see the line written by the person before them, leading to chaos and streams-of-consciousness.\n\nNOTE: This bot is a work-in-progress, with further game modes and quality-of-life features planned for future development. For comments, questions, or to report a bug, please message ${process.env.MY_USERNAME}. Last updated: 1-18-2026\n\nHit one of the buttons below to get started.`,
   [PlayerState.TRYING_LEAVE]: (player) => {
     return `Are you sure you want to leave the game?${player.isHost() ? " Since you are the host, this will end the game for all players." : ""}`;
   },
