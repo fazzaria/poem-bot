@@ -51,6 +51,6 @@ export type Conversation = GrammyConversation<
 export type ConversationFn = (
   conversation: Conversation,
   ctx: ConversationFlavor<Context>
-) => Promise<any>;
+) => Promise<void>;
 
 export type ReplyHandlerFn = (ctx: Context, reply: string) => Promise<void>;

@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsup src/server/index.ts --watch --onSuccess \"node dist/index.js\"",
+    "dev": "tsup src/server/index.ts --watch --onSuccess \"node dist/index.cjs\"",
+    "lint": "eslint",
     "build": "tsup src/server/index.ts --minify --clean",
     "start": "pm2 start ecosystem.config.js",
     "check:circles": "npx madge --circular src/"
@@ -19,11 +20,16 @@
     "grammy": "^1.11.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
+    "jiti": "^2.6.1",
     "pm2": "^6.0.14",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^8.5.1",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "typescript-eslint": "^8.53.1"
   }
 }

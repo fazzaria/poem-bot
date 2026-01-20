@@ -13,7 +13,7 @@ import {
 export const stateKeyboardButtonMap: {
   [key in MessagingState]: ((player: Player) => Callback[]) | null;
 } = {
-  [PlayerState.IN_ARCHIVES]: (player) => {
+  [PlayerState.IN_ARCHIVES]: (_player) => {
     return [BasicCallback.EXIT_ARCHIVE];
   },
   [PlayerState.LOBBY]: (player) => {
@@ -28,7 +28,7 @@ export const stateKeyboardButtonMap: {
     if (isHost) return [BasicCallback.RESTART_GAME];
     return [];
   },
-  [PlayerState.WRITING]: (player) => [],
+  [PlayerState.WRITING]: (_player) => [],
   [PlayerState.SETTING_UP_GAME]: (player) => {
     const game = getGameOrThrow(player.gameId);
     const hasDescription = !!game?.options[GameOption.DESCRIPTION];
@@ -44,31 +44,31 @@ export const stateKeyboardButtonMap: {
       BasicCallback.RETURN_TO_PREVIOUS_STATE,
     ];
   },
-  [PlayerState.SPECTATING]: (player) => [],
-  [PlayerState.START]: (player) => [
+  [PlayerState.SPECTATING]: (_player) => [],
+  [PlayerState.START]: (_player) => [
     BasicCallback.TRY_JOIN,
     BasicCallback.SET_UP_GAME,
     BasicCallback.VIEW_ARCHIVED_POEMS,
   ],
-  [PlayerState.TRYING_LEAVE]: (player) => [
+  [PlayerState.TRYING_LEAVE]: (_player) => [
     BasicCallback.RETURN_TO_PREVIOUS_STATE,
     BasicCallback.LEAVE_GAME,
   ],
-  [PlayerState.TYPING]: (player) => {
+  [PlayerState.TYPING]: (_player) => {
     return [];
   },
-  [PlayerState.VIEWING_ARCHIVED_POEM]: (player) => {
+  [PlayerState.VIEWING_ARCHIVED_POEM]: (_player) => {
     return [BasicCallback.EXIT_ARCHIVE];
   },
-  [PlayerState.WAITING_AFTER_WRITING]: (player) => [],
-  [PlayerState.WAITING_TO_WRITE]: (player) => [],
-  [ConversationState.GET_ARCHIVED_POEM]: (player) => [
+  [PlayerState.WAITING_AFTER_WRITING]: (_player) => [],
+  [PlayerState.WAITING_TO_WRITE]: (_player) => [],
+  [ConversationState.GET_ARCHIVED_POEM]: (_player) => [
     BasicCallback.RETURN_TO_PREVIOUS_STATE,
   ],
-  [ConversationState.GET_GAME_DESCRIPTION]: (player) => [
+  [ConversationState.GET_GAME_DESCRIPTION]: (_player) => [
     BasicCallback.RETURN_TO_PREVIOUS_STATE,
   ],
-  [ConversationState.GET_GAME_ID]: (player) => [
+  [ConversationState.GET_GAME_ID]: (_player) => [
     BasicCallback.RETURN_TO_PREVIOUS_STATE,
   ],
 };

@@ -1,3 +1,3 @@
 import { HandlerFn } from "types";
 
-export const exitArchiveHandler: HandlerFn = async (ctx) => {};
+export const exitArchiveHandler: HandlerFn = async (_ctx) => {};

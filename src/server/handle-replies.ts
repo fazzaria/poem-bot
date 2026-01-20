@@ -13,7 +13,7 @@ export const handleReplies = (bot: Bot) => {
     const handlerFn = replyHandlerMap[player.state];
     if (handlerFn) {
       const reply = ctx.message.text;
-      handlerFn(ctx, reply);
+      await handlerFn(ctx, reply);
     }
   });
 };

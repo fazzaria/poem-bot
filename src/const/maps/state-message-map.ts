@@ -29,7 +29,7 @@ export const stateMessageMap: {
 
     return LOBBY_MESSAGE(players, game, isHost);
   },
-  [PlayerState.POST_GAME]: (player) => {
+  [PlayerState.POST_GAME]: (_player) => {
     return `Poem finished! Here's what you all came up with:`;
   },
   [PlayerState.WRITING]: (player) => {
@@ -73,13 +73,13 @@ export const stateMessageMap: {
     }
     return message;
   },
-  [PlayerState.START]: (player) =>
+  [PlayerState.START]: (_player) =>
     `Welcome to ${BOT_NAME}!\n\nThe game is simple: work with your friends to write a poem one line at a time. However, each person only gets to see the line written by the person before them, leading to chaos and streams-of-consciousness.\n\nNOTE: This bot is a work-in-progress, with further game modes and quality-of-life features planned for future development. For comments, questions, or to report a bug, please message ${process.env.MY_USERNAME}. (Last updated: 1-18-2026)\n\nHit one of the buttons below to get started.`,
   [PlayerState.TRYING_LEAVE]: (player) => {
     return `Are you sure you want to leave the game?${player.isHost() ? " Since you are the host, this will end the game for all players." : ""}`;
   },
   [PlayerState.TYPING]: null,
-  [PlayerState.VIEWING_ARCHIVED_POEM]: (player) => {
+  [PlayerState.VIEWING_ARCHIVED_POEM]: (_player) => {
     return "viewing archived poem state";
   },
   [PlayerState.WAITING_AFTER_WRITING]: (player) => {
@@ -114,7 +114,7 @@ export const stateMessageMap: {
       description ? `\n\nCurrent Description: ${description}` : ""
     }`;
   },
-  [ConversationState.GET_ARCHIVED_POEM]: (player) =>
+  [ConversationState.GET_ARCHIVED_POEM]: (_player) =>
     "Enter the id of the poem to check out.",
   [ConversationState.GET_GAME_ID]: () => "Enter a 4-character game ID.",
 };

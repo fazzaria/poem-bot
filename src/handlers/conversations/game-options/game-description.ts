@@ -1,4 +1,4 @@
-import { getContextPlayerOrThrow, getGameOrThrow, getGames } from "data";
+import { getContextPlayerOrThrow, getGameOrThrow } from "data";
 import { messagePlayer } from "messaging";
 import { setPlayerState } from "player-state";
 import {
@@ -11,7 +11,7 @@ import { getConversationValue } from "utils";
 
 export const gameDescriptionConversation: ConversationFn = async (
   conversation,
-  ctx
+  ctx,
 ) => {
   const player = getContextPlayerOrThrow(ctx);
   const game = getGameOrThrow(player.gameId);
@@ -22,7 +22,7 @@ export const gameDescriptionConversation: ConversationFn = async (
       await messagePlayer(
         player.id,
         ConversationState.GET_GAME_DESCRIPTION,
-        ctx
+        ctx,
       ),
     handleCancel: async () => {
       await setPlayerState(player.id, ctx, PlayerState.SETTING_UP_GAME);
@@ -32,7 +32,8 @@ export const gameDescriptionConversation: ConversationFn = async (
       await setPlayerState(player.id, ctx, PlayerState.SETTING_UP_GAME);
       return;
     },
-    validate: async (description: string) => {
+    // eslint-disable-next-line require-await
+    validate: async (_description: string) => {
       return true;
     },
   });

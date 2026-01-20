@@ -6,7 +6,7 @@ import {
   ReplyKeyboardRemove,
   ForceReply,
 } from "grammy/types";
-import { Keyboard, MessagingState, PlayerState } from "types";
+import { Keyboard, MessagingState } from "types";
 import { encodeCallbackName } from "./callback-name-encoding";
 
 type ReplyMarkup =

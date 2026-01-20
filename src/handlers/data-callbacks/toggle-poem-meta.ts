@@ -1,14 +1,12 @@
 import { HIDE_SHOW_METADATA, POEM_NOT_FOUND } from "const";
 import { getArchivedPoem } from "data";
 import { InlineKeyboard } from "grammy";
-import { CallbackWithData, Context, HandlerFn } from "types";
+import { CallbackData, CallbackWithData, Context, DataHandlerFn } from "types";
 import { encodeCallbackData } from "utils";
-
-type PoemID = { id: string };
 
 const togglePoemMeta = async (
   ctx: Context,
-  data: PoemID,
+  data: CallbackData,
   includeMeta?: boolean,
 ) => {
   const poem = getArchivedPoem(data.id);
@@ -24,7 +22,7 @@ const togglePoemMeta = async (
   try {
     const compiledPoem = poem?.compile(includeMeta);
     if (compiledPoem) {
-      ctx.editMessageText(compiledPoem ?? POEM_NOT_FOUND, {
+      await ctx.editMessageText(compiledPoem ?? POEM_NOT_FOUND, {
         parse_mode: "HTML",
         reply_markup: keyboard,
       });
@@ -34,10 +32,16 @@ const togglePoemMeta = async (
   }
 };
 
-export const showPoemMetaHandler: HandlerFn = async (ctx, data: PoemID) => {
+export const showPoemMetaHandler: DataHandlerFn = async (
+  ctx,
+  data: CallbackData,
+) => {
   await togglePoemMeta(ctx, data, true);
 };
 
-export const hidePoemMetaHandler: HandlerFn = async (ctx, data: PoemID) => {
+export const hidePoemMetaHandler: DataHandlerFn = async (
+  ctx,
+  data: CallbackData,
+) => {
   await togglePoemMeta(ctx, data);
 };
